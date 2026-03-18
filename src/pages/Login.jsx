@@ -1,6 +1,6 @@
 // Import React hook that lets us store and update values
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 // Import our axios API helper (used to talk to backend)
 import api from "../services/api";
 
@@ -16,6 +16,9 @@ const Login = () => {
 
   // Stores the email typed by user
   const [email, setEmail] = useState("");//email = stored value, setEmail = function to change it, "" = starting value
+
+  // Hook used for programmatic navigation
+  const navigate = useNavigate();
 
   // Stores the password typed by user
   const [password, setPassword] = useState("");
@@ -60,6 +63,9 @@ const Login = () => {
 
       // Show success message on UI
       setMessage("Login successful ✅");
+
+      // Redirect to tasks page
+      navigate("/tasks");
 
       // Debug: view backend response in console
       console.log("Backend response:", res.data);
