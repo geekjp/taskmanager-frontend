@@ -48,10 +48,15 @@ const Tasks = () => {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
 
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(
+    (task) => task.status === "completed",
+  ).length;
+  const pendingTasks = tasks.filter((task) => task.status === "pending").length;
+
   /* =========================================================================
      EFFECT SECTION
      ========================================================================= */
-
   // Runs once when component mounts
   useEffect(() => {
     fetchTasks();
@@ -220,7 +225,26 @@ const Tasks = () => {
       </div>
 
       <hr />
+      {/* ------------------------------------------------------------------
+   Dashboard Stats
+------------------------------------------------------------------ */}
 
+      <div className="stats-container">
+        <div className="stat-card">
+          <h4>Total</h4>
+          <p>{totalTasks}</p>
+        </div>
+
+        <div className="stat-card">
+          <h4>Pending</h4>
+          <p>{pendingTasks}</p>
+        </div>
+
+        <div className="stat-card">
+          <h4>Completed</h4>
+          <p>{completedTasks}</p>
+        </div>
+      </div>
       {/* ================= Add Task ================= */}
       <h3 className="add-task-heading">Add Tasks</h3>
 
@@ -241,7 +265,7 @@ const Tasks = () => {
       {/* ================= Task List ================= */}
 
       {loading ? (
-         <Loader />
+        <Loader />
       ) : filteredTasks.length === 0 ? (
         <p>No tasks found</p>
       ) : (
@@ -313,10 +337,7 @@ const Tasks = () => {
           Page {page} of {totalPage}
         </span>
 
-        <button
-          disabled={page === totalPage}
-          onClick={() => setPage(page + 1)}
-        >
+        <button disabled={page === totalPage} onClick={() => setPage(page + 1)}>
           Next
         </button>
       </div>
