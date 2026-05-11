@@ -26,6 +26,7 @@ const Login = () => {
   // Stores success/error message to show on screen
   const [message, setMessage] = useState("");
 
+  const [loading, setLoading] = useState(false);
 
 
   /*
@@ -35,52 +36,43 @@ const Login = () => {
   -----------------------------------------
   */
   const handleLogin = async (e) => {
+  e.preventDefault();
 
-    // Prevent browser page reload
-    e.preventDefault();
+  // ❌ Step 1: Validate BEFORE loader
+  if (!email || !password) {
+    setMessage("All fields are required ❌");
+    return;
+  }
 
-    try {
+  // Optional: Email format check
+  if (!email.includes("@")) {
+    setMessage("Please provide a valid email ❌");
+    return;
+  }
 
-      /*
-      Send login request to backend
+  try {
+    setLoading(true); // ✅ start loader ONLY if valid
 
-      React → Axios → Node backend
-      */
+    const res = await api.post("/auth/login", {
+      email,
+      password,
+    });
 
-      const res = await api.post("/auth/login", {
-        email,
-        password
-      });
+    localStorage.setItem("token", res.data.data.token);
 
-      /*
-      Backend returns JWT token
-      We store it in browser storage
-      */
-      localStorage.setItem(
-        "token",
-        res.data.data.token
-      );
-
-      // Show success message on UI
-      setMessage("Login successful ✅");
+    setMessage("Login successful ✅");
 
       // Redirect to tasks page
       navigate("/tasks");
 
-      // Debug: view backend response in console
-      console.log("Backend response:", res.data);
-
-    } catch (error) {
-
-      /*
-      If login fails → show backend error
-      */
-      setMessage(
-        error.response?.data?.message ||
-        "Login failed ❌"
-      );
-    }
-  };
+  } catch (error) {
+    setMessage(
+      error.response?.data?.message || "Login failed ❌"
+    );
+  } finally {
+    setLoading(false); // always stop loader
+  }
+};
 
 
 
@@ -101,18 +93,18 @@ const Login = () => {
         <input
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {setEmail(e.target.value);setMessage("")}}
         />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+         onChange={(e) => {setPassword(e.target.value);setMessage("")}}
         />
 
-        <button type="submit">
-          Login
+        <button type="submit" disabled={loading} >
+          {loading ? "Loading..." : "Login"}
         </button>
 
       </form>

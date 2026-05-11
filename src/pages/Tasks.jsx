@@ -41,6 +41,9 @@ const Tasks = () => {
   // Controls loading state for API requests
   const [loading, setLoading] = useState(false);
 
+  const [creating, setCreating] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
   //showToast function rendering
   const { showToast } = useToast();
 
@@ -114,6 +117,7 @@ const Tasks = () => {
     if (!title.trim()) return; // Prevent empty task
 
     try {
+      setCreating(true);
       await api.post("/tasks", { title });
 
       setTitle(""); // Clear input
@@ -121,6 +125,8 @@ const Tasks = () => {
       showToast("Task created successfully");
     } catch (error) {
       showToast("Failed to create task", "error");
+    } finally {
+      setCreating(false); // 🔥 stop loader
     }
   };
 
@@ -169,13 +175,17 @@ const Tasks = () => {
     if (!confirmDelete) return;
 
     try {
+      setDeletingId(taskId); //mark which task is deleting
       await api.delete(`/tasks/${taskId}`);
 
       // Remove from state
       setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+      fetchTasks(); // Refresh tasks
       showToast("Task deleted successfully");
     } catch (error) {
       showToast("Failed to delete task", "error");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -257,8 +267,8 @@ const Tasks = () => {
           className="add-task-input"
         />
 
-        <button type="submit" className="add-task-btn">
-          Add Task
+        <button type="submit" className="add-task-btn" disabled={creating}>
+          {creating ? "Adding..." : "Add Task"}
         </button>
       </form>
 
@@ -267,7 +277,15 @@ const Tasks = () => {
       {loading ? (
         <Loader />
       ) : filteredTasks.length === 0 ? (
-        <p>No tasks found</p>
+        /* ------------------------------------------------------------------
+   Empty State UI
+------------------------------------------------------------------ */
+
+        <div className="empty-state">
+          <h3>📭 No Tasks Yet</h3>
+
+          <p>Start by adding your first task.</p>
+        </div>
       ) : (
         filteredTasks.map((task) => (
           <div key={task._id} className="task-item">
@@ -320,7 +338,13 @@ const Tasks = () => {
                     Edit
                   </button>
 
-                  <button onClick={() => deleteTask(task._id)}>Delete</button>
+                  <button
+                    onClick={() => deleteTask(task._id)}
+                    disabled={deletingId === task._id}
+                  >
+                    {" "}
+                    {deletingId === task._id ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
               </>
             )}
@@ -328,19 +352,29 @@ const Tasks = () => {
         ))
       )}
 
-      <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-          Prev
-        </button>
+      {/* Show pagination only if tasks exist */}
 
-        <span>
-          Page {page} of {totalPage}
-        </span>
+      {tasks.length > 0 && (
+        <div className="pagination">
+          <button
+            onClick={() => setPage((prev) => prev - 1)}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
 
-        <button disabled={page === totalPage} onClick={() => setPage(page + 1)}>
-          Next
-        </button>
-      </div>
+          <span>
+            Page {page} of {totalPage}
+          </span>
+
+          <button
+            onClick={() => setPage((prev) => prev + 1)}
+            disabled={page === totalPage}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
