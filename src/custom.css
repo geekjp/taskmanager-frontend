@@ -358,3 +358,37 @@ button:disabled {
 .empty-state p {
   font-size: 15px;
 }
+
+/* ------------------------------------------------------------------
+   Task Filters
+------------------------------------------------------------------ */
+
+.filter-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-buttons button {
+  background-color: #E2E8F0;
+  color: #0F172A;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.filter-buttons button:hover {
+  background-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+/* Active Filter */
+
+.active-filter {
+  background-color: #3B82F6 !important;
+  color: white !important;
+  box-shadow: 0 5px 12px rgba(59,130,246,0.25);
+}

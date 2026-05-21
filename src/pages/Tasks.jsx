@@ -44,6 +44,9 @@ const Tasks = () => {
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
+  //filter stats
+  const [filter, setFilter] = useState("all");
+
   //showToast function rendering
   const { showToast } = useToast();
 
@@ -70,13 +73,36 @@ const Tasks = () => {
      ========================================================================= */
 
   /*
-    filteredTasks:
-    - Dynamically filters tasks based on search input
-    - Case insensitive comparison
-  */
-  const filteredTasks = tasks.filter((task) =>
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+|--------------------------------------------------------------------------
+| Filtered Tasks
+|--------------------------------------------------------------------------
+| Filters tasks by:
+| 1. Search input
+| 2. Task status
+|--------------------------------------------------------------------------
+*/
+
+  const filteredTasks = tasks.filter((task) => {
+    /* --------------------------------------------------------------
+     Search Filtering
+  -------------------------------------------------------------- */
+
+    const matchesSearch = task.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    /* --------------------------------------------------------------
+     Status Filtering
+  -------------------------------------------------------------- */
+
+    const matchesFilter = filter === "all" ? true : task.status === filter;
+
+    /* --------------------------------------------------------------
+     Return tasks matching BOTH conditions
+  -------------------------------------------------------------- */
+
+    return matchesSearch && matchesFilter;
+  });
 
   /* =========================================================================
      API FUNCTIONS
@@ -215,6 +241,23 @@ const Tasks = () => {
     }
   };
 
+  /*
+  |--------------------------------------------------------------------------
+  | Filter Counts
+  |--------------------------------------------------------------------------
+  */
+
+  const allCount = tasks.length;
+  const pendingCount = tasks.filter((task)=> task.status === "pending").length;
+  const completedCount = tasks.filter((task)=> task.status === "completed").length;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Filtered Tasks
+  |--------------------------------------------------------------------------
+  | Returns tasks based on selected filter
+  */
+
   /* =========================================================================
      UI SECTION
      ========================================================================= */
@@ -233,12 +276,10 @@ const Tasks = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-
       <hr />
       {/* ------------------------------------------------------------------
    Dashboard Stats
 ------------------------------------------------------------------ */}
-
       <div className="stats-container">
         <div className="stat-card">
           <h4>Total</h4>
@@ -255,9 +296,33 @@ const Tasks = () => {
           <p>{completedTasks}</p>
         </div>
       </div>
+      {/* ------------------------------------------------------------------ Task
+      Filters ------------------------------------------------------------------
+      */}
+      <div className="filter-buttons">
+        <button
+          className={filter === "all" ? "active-filter" : ""}
+          onClick={() => setFilter("all")}
+        >
+          All ({allCount})
+        </button>
+
+        <button
+          className={filter === "pending" ? "active-filter" : ""}
+          onClick={() => setFilter("pending")}
+        >
+          Pending ({pendingCount})
+        </button>
+
+        <button
+          className={filter === "completed" ? "active-filter" : ""}
+          onClick={() => setFilter("completed")}
+        >
+          Completed ({completedCount})
+        </button>
+      </div>
       {/* ================= Add Task ================= */}
       <h3 className="add-task-heading">Add Tasks</h3>
-
       <form onSubmit={createTask} className="add-task-form">
         <input
           type="text"
@@ -271,9 +336,7 @@ const Tasks = () => {
           {creating ? "Adding..." : "Add Task"}
         </button>
       </form>
-
       {/* ================= Task List ================= */}
-
       {loading ? (
         <Loader />
       ) : filteredTasks.length === 0 ? (
@@ -351,9 +414,7 @@ const Tasks = () => {
           </div>
         ))
       )}
-
       {/* Show pagination only if tasks exist */}
-
       {tasks.length > 0 && (
         <div className="pagination">
           <button
