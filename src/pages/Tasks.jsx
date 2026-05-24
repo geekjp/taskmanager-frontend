@@ -137,7 +137,7 @@ const Tasks = () => {
   | Sends POST request to backend
   | Clears input after success
   */
-  const createTask = async (e) => {
+  /* const createTask = async (e) => {
     e.preventDefault();
 
     if (!title.trim()) return; // Prevent empty task
@@ -153,6 +153,98 @@ const Tasks = () => {
       showToast("Failed to create task", "error");
     } finally {
       setCreating(false); // 🔥 stop loader
+    }
+  }; */
+
+  /*
+  |--------------------------------------------------------------------------
+  | Function: createTask
+  |--------------------------------------------------------------------------
+  | Optimistic Task Creation
+  |--------------------------------------------------------------------------
+  */
+
+  const createTask = async (e) => {
+    e.preventDefault();
+
+    // Prevent empty task
+    if (!title.trim()) return;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Temporary Optimistic Task
+    |--------------------------------------------------------------------------
+    */
+
+    const tempTask = {
+      _id: Date.now(), // temporary unique id
+      title,
+      status: "pending",
+    };
+
+    // Store current tasks for rollback
+    const previousTasks = tasks;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Optimistically update UI
+    |--------------------------------------------------------------------------
+    */
+
+    setTasks((prevTasks) => [
+      tempTask,
+      ...prevTasks,
+    ]);
+
+    // Clear input instantly
+    setTitle("");
+
+    try {
+
+      setCreating(true);
+
+      /*
+      |--------------------------------------------------------------------------
+      | Backend Request
+      |--------------------------------------------------------------------------
+      */
+
+      const res = await api.post("/tasks", {
+        title,
+      });
+
+      /*
+      |--------------------------------------------------------------------------
+      | Replace temp task with real backend task
+      |--------------------------------------------------------------------------
+      */
+
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === tempTask._id
+            ? res.data.data.task
+            : task
+        )
+      );
+
+      showToast("Task created successfully");
+
+    } catch (error) {
+
+      /*
+      |--------------------------------------------------------------------------
+      | Rollback if API fails
+      |--------------------------------------------------------------------------
+      */
+
+      setTasks(previousTasks);
+
+      showToast("Failed to create task", "error");
+
+    } finally {
+
+      setCreating(false);
+
     }
   };
 
@@ -193,7 +285,7 @@ const Tasks = () => {
   | Sends DELETE request
   | Removes from UI after success
   */
-  const deleteTask = async (taskId) => {
+  /* const deleteTask = async (taskId) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this task?",
     );
@@ -213,7 +305,59 @@ const Tasks = () => {
     } finally {
       setDeletingId(null);
     }
-  };
+  }; */
+
+  /*
+  |--------------------------------------------------------------------------
+  | Optimistic Delete
+  |--------------------------------------------------------------------------
+  | Remove task instantly from UI
+  | Then call backend
+  |--------------------------------------------------------------------------
+  */
+  const deleteTask = async (id) => {
+
+  if (!window.confirm("Are you sure?")) {
+    return;
+  }
+
+  // Backup for rollback
+  const previousTasks = tasks;
+
+  // Optimistically remove task
+  const updatedTasks = tasks.filter(
+    (task) => task._id !== id
+  );
+
+  setTasks(updatedTasks);
+
+  try {
+
+    await api.delete(`/tasks/${id}`);
+
+    showToast("Task deleted");
+
+    /*
+    ---------------------------------------------------
+    Pagination Edge Case
+    ---------------------------------------------------
+    If page becomes empty after delete:
+    go back one page
+    ---------------------------------------------------
+    */
+
+    if (updatedTasks.length === 0 && page > 1) {
+      setPage((prev) => prev - 1);
+    }
+
+  } catch (error) {
+
+    // Rollback UI if delete fails
+    setTasks(previousTasks);
+
+    showToast("Delete failed", "error");
+  }
+};
 
   /*
   |--------------------------------------------------------------------------
@@ -221,7 +365,7 @@ const Tasks = () => {
   |--------------------------------------------------------------------------
   | Switches between pending & completed
   */
-  const toggleStatus = async (task) => {
+  /* const toggleStatus = async (task) => {
     const newStatus = task.status === "pending" ? "completed" : "pending";
 
     try {
@@ -239,8 +383,77 @@ const Tasks = () => {
     } catch (error) {
       showToast("Failed to update status", "error");
     }
-  };
+  }; */
+  /*
+  |--------------------------------------------------------------------------
+  | Function: toggleStatus
+  |--------------------------------------------------------------------------
+  | Optimistically updates task status
+  |--------------------------------------------------------------------------
+  */
 
+  const toggleStatus = async (task) => {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Determine new status
+    |--------------------------------------------------------------------------
+    */
+
+    const newStatus =
+      task.status === "pending"
+        ? "completed"
+        : "pending";
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backup tasks for rollback
+    |--------------------------------------------------------------------------
+    */
+
+    const previousTasks = tasks;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Optimistically update UI
+    |--------------------------------------------------------------------------
+    */
+
+    setTasks((prevTasks) =>
+      prevTasks.map((t) =>
+        t._id === task._id
+          ? { ...t, status: newStatus }
+          : t
+      )
+    );
+
+    try {
+
+      /*
+      |--------------------------------------------------------------------------
+      | Backend request
+      |--------------------------------------------------------------------------
+      */
+
+      await api.put(`/tasks/${task._id}`, {
+        status: newStatus,
+      });
+
+      showToast("Task updated");
+
+    } catch (error) {
+
+      /*
+      |--------------------------------------------------------------------------
+      | Rollback if API fails
+      |--------------------------------------------------------------------------
+      */
+
+      setTasks(previousTasks);
+
+      showToast("Failed to update task", "error");
+    }
+  };
   /*
   |--------------------------------------------------------------------------
   | Filter Counts
