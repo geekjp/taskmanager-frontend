@@ -1,5 +1,6 @@
 // Import routing tools from react-router-dom
 // These allow us to create different URLs inside our React app
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Import page components
@@ -7,7 +8,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Tasks from "./pages/Tasks";
 import Navbar from "./components/Navbar";
-
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +26,6 @@ const isAuthenticated = () => {
   return localStorage.getItem("token");
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Component: PrivateRoute
@@ -41,15 +40,22 @@ const isAuthenticated = () => {
 | If not → redirect to /login
 */
 const PrivateRoute = ({ children }) => {
-  return isAuthenticated()
-    ? children                // Show protected component
-    : <Navigate to="/login" />; // Redirect to login page
+  return isAuthenticated() ? (
+    children // Show protected component
+  ) : (
+    <Navigate to="/login" />
+  ); // Redirect to login page
 };
 
-
 const App = () => {
-  return (
+     /*
+    |--------------------------------------------------------------------------
+    | Theme State
+    |--------------------------------------------------------------------------
+    */
 
+    const [darkMode, setDarkMode] = useState(false);
+  return (
     /*
     |--------------------------------------------------------------------------
     | BrowserRouter
@@ -57,17 +63,24 @@ const App = () => {
     | Enables routing in the entire app.
     | Without this, URL-based navigation won't work.
     */
-    <BrowserRouter>
-         <Navbar /> {/* Global Navigation */}
-      {/*
+    /*
+    |--------------------------------------------------------------------------
+    | Theme Wrapper
+    |--------------------------------------------------------------------------
+    | Applies dark/light class globally
+    */
+    <div className={darkMode ? "dark" : "light"}>
+      <BrowserRouter>
+        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        {/* Global Navigation */}
+        {/*
       |--------------------------------------------------------------------------
       | Routes
       |--------------------------------------------------------------------------
       | Container that holds all individual route definitions.
       */}
-      <Routes>
-
-        {/*
+        <Routes>
+          {/*
         |--------------------------------------------------------------------------
         | Login Route
         |--------------------------------------------------------------------------
@@ -76,10 +89,9 @@ const App = () => {
         |
         | Render the Login component
         */}
-        <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
-
-        {/*
+          {/*
         |--------------------------------------------------------------------------
         | Protected Tasks Route
         |--------------------------------------------------------------------------
@@ -89,17 +101,16 @@ const App = () => {
         | We wrap <Tasks /> inside <PrivateRoute>
         | This ensures only logged-in users can access it.
         */}
-        <Route
-          path="/tasks"
-          element={
-            <PrivateRoute>
-              <Tasks />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/tasks"
+            element={
+              <PrivateRoute>
+                <Tasks />
+              </PrivateRoute>
+            }
+          />
 
-
-        {/*
+          {/*
         |--------------------------------------------------------------------------
         | Default Route (/)
         |--------------------------------------------------------------------------
@@ -111,16 +122,19 @@ const App = () => {
         | If logged in → go to /tasks
         | If not logged in → go to /login
         */}
-        <Route
-          path="/"
-          element={
-            isAuthenticated()
-              ? <Navigate to="/tasks" />
-              : <Navigate to="/login" />
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+          <Route
+            path="/"
+            element={
+              isAuthenticated() ? (
+                <Navigate to="/tasks" />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 };
 

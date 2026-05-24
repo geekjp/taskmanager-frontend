@@ -392,3 +392,87 @@ button:disabled {
   color: white !important;
   box-shadow: 0 5px 12px rgba(59,130,246,0.25);
 }
+
+/* ------------------------------------------------------------------
+   LIGHT THEME
+------------------------------------------------------------------ */
+
+.light {
+  background-color: #F1F5F9;
+  color: #0F172A;
+  min-height: 100vh;
+}
+
+/* ------------------------------------------------------------------
+   DARK THEME
+------------------------------------------------------------------ */
+
+.dark {
+  background-color: #0F172A;
+  color: #F8FAFC;
+  min-height: 100vh;
+}
+
+/* Dark Navbar */
+
+.dark .navbar {
+  background-color: #020617;
+}
+
+/* Dark Cards / Containers */
+
+.dark .container,
+.dark .login-card,
+.dark .stat-card,
+.dark .task-item {
+  background-color: #1E293B;
+  color: #F8FAFC;
+  border-color: #334155;
+}
+
+/* Dark Inputs */
+
+.dark input {
+  background-color: #334155;
+  color: white;
+  border: 1px solid #475569;
+}
+
+/* Dark Filter Buttons */
+
+.dark .filter-buttons button {
+  background-color: #334155;
+  color: white;
+}
+
+/* Dark Empty State */
+
+.dark .empty-state {
+  color: #CBD5E1;
+}
+/* Dark Mode Stats Text */
+
+.dark .stat-card h4,
+.dark .stat-card p {
+  color: #F8FAFC;
+}
+/* Dark Placeholder */
+
+.dark input::placeholder {
+  color: #CBD5E1;
+}
+/* Better Dark Input Contrast */
+
+.dark input {
+  background-color: #334155;
+  color: #F8FAFC;
+  border: 1px solid #475569;
+}
+.dark .stat-card {
+  border: 1px solid #475569;
+}
+/* Dark Divider */
+
+.dark hr {
+  border-color: #334155;
+}
