@@ -1,6 +1,6 @@
 // Import routing tools from react-router-dom
 // These allow us to create different URLs inside our React app
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Import page components
@@ -48,13 +48,27 @@ const PrivateRoute = ({ children }) => {
 };
 
 const App = () => {
-     /*
-    |--------------------------------------------------------------------------
-    | Theme State
-    |--------------------------------------------------------------------------
-    */
+  /*
+|--------------------------------------------------------------------------
+| Theme State
+|--------------------------------------------------------------------------
+| Initialize theme from localStorage
+|--------------------------------------------------------------------------
 
-    const [darkMode, setDarkMode] = useState(false);
+  useState(() => {}) this called 👉 Lazy Initialization meaning -Run only on first render
+*/
+
+  const [darkMode, setDarkMode] = useState(() => {
+    // Read saved theme
+    const savedTheme = localStorage.getItem("darkMode");
+
+    // Convert string to boolean
+    return savedTheme === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("darkMode", darkMode)
+  }, [darkMode])
   return (
     /*
     |--------------------------------------------------------------------------
