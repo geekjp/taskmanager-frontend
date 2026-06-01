@@ -59,7 +59,7 @@ const Tasks = () => {
     (task) => task.status === "completed",
   ).length;
   const pendingTasks = tasks.filter((task) => task.status === "pending").length;
-
+  const user = JSON.parse(localStorage.getItem("user"));
   /* =========================================================================
      EFFECT SECTION
      ========================================================================= */
@@ -120,6 +120,7 @@ const Tasks = () => {
       setLoading(true);
 
       const res = await api.get(`/tasks?page=${page}`);
+      console.log(res)
       // Save tasks in state
       setTasks(res.data.tasks);
       setTotalPage(res.data.totalPages);
@@ -191,16 +192,12 @@ const Tasks = () => {
     |--------------------------------------------------------------------------
     */
 
-    setTasks((prevTasks) => [
-      tempTask,
-      ...prevTasks,
-    ]);
+    setTasks((prevTasks) => [tempTask, ...prevTasks]);
 
     // Clear input instantly
     setTitle("");
 
     try {
-
       setCreating(true);
 
       /*
@@ -221,16 +218,12 @@ const Tasks = () => {
 
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
-          task._id === tempTask._id
-            ? res.data.data.task
-            : task
-        )
+          task._id === tempTask._id ? res.data.data.task : task,
+        ),
       );
 
       showToast("Task created successfully");
-
     } catch (error) {
-
       /*
       |--------------------------------------------------------------------------
       | Rollback if API fails
@@ -240,11 +233,8 @@ const Tasks = () => {
       setTasks(previousTasks);
 
       showToast("Failed to create task", "error");
-
     } finally {
-
       setCreating(false);
-
     }
   };
 
@@ -316,28 +306,24 @@ const Tasks = () => {
   |--------------------------------------------------------------------------
   */
   const deleteTask = async (id) => {
+    if (!window.confirm("Are you sure?")) {
+      return;
+    }
 
-  if (!window.confirm("Are you sure?")) {
-    return;
-  }
+    // Backup for rollback
+    const previousTasks = tasks;
 
-  // Backup for rollback
-  const previousTasks = tasks;
+    // Optimistically remove task
+    const updatedTasks = tasks.filter((task) => task._id !== id);
 
-  // Optimistically remove task
-  const updatedTasks = tasks.filter(
-    (task) => task._id !== id
-  );
+    setTasks(updatedTasks);
 
-  setTasks(updatedTasks);
+    try {
+      await api.delete(`/tasks/${id}`);
 
-  try {
+      showToast("Task deleted");
 
-    await api.delete(`/tasks/${id}`);
-
-    showToast("Task deleted");
-
-    /*
+      /*
     ---------------------------------------------------
     Pagination Edge Case
     ---------------------------------------------------
@@ -346,18 +332,16 @@ const Tasks = () => {
     ---------------------------------------------------
     */
 
-    if (updatedTasks.length === 0 && page > 1) {
-      setPage((prev) => prev - 1);
+      if (updatedTasks.length === 0 && page > 1) {
+        setPage((prev) => prev - 1);
+      }
+    } catch (error) {
+      // Rollback UI if delete fails
+      setTasks(previousTasks);
+
+      showToast("Delete failed", "error");
     }
-
-  } catch (error) {
-
-    // Rollback UI if delete fails
-    setTasks(previousTasks);
-
-    showToast("Delete failed", "error");
-  }
-};
+  };
 
   /*
   |--------------------------------------------------------------------------
@@ -393,17 +377,13 @@ const Tasks = () => {
   */
 
   const toggleStatus = async (task) => {
-
     /*
     |--------------------------------------------------------------------------
     | Determine new status
     |--------------------------------------------------------------------------
     */
 
-    const newStatus =
-      task.status === "pending"
-        ? "completed"
-        : "pending";
+    const newStatus = task.status === "pending" ? "completed" : "pending";
 
     /*
     |--------------------------------------------------------------------------
@@ -421,14 +401,11 @@ const Tasks = () => {
 
     setTasks((prevTasks) =>
       prevTasks.map((t) =>
-        t._id === task._id
-          ? { ...t, status: newStatus }
-          : t
-      )
+        t._id === task._id ? { ...t, status: newStatus } : t,
+      ),
     );
 
     try {
-
       /*
       |--------------------------------------------------------------------------
       | Backend request
@@ -440,9 +417,7 @@ const Tasks = () => {
       });
 
       showToast("Task updated");
-
     } catch (error) {
-
       /*
       |--------------------------------------------------------------------------
       | Rollback if API fails
@@ -461,8 +436,10 @@ const Tasks = () => {
   */
 
   const allCount = tasks.length;
-  const pendingCount = tasks.filter((task)=> task.status === "pending").length;
-  const completedCount = tasks.filter((task)=> task.status === "completed").length;
+  const pendingCount = tasks.filter((task) => task.status === "pending").length;
+  const completedCount = tasks.filter(
+    (task) => task.status === "completed",
+  ).length;
 
   /*
   |--------------------------------------------------------------------------
@@ -478,8 +455,21 @@ const Tasks = () => {
   return (
     <div className="container">
       {/* ================= Header ================= */}
-      <div className="tasks-header">
-        <h2>Your Tasks</h2>
+      {/* ------------------------------------------------------------------
+      Dashboard Header
+      ------------------------------------------------------------------ */}
+      <div className="dashboard-header">
+        {/* Left Content */}
+
+        <div>
+          <h2 className="welcome-text">Welcome, {user?.name} 👋</h2>
+
+          <p className="dashboard-subtitle">
+            Manage your daily tasks efficiently
+          </p>
+        </div>
+
+        {/* Search */}
 
         <input
           type="text"
@@ -489,6 +479,8 @@ const Tasks = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+      <hr />
+      <h2 className="tasks-title">Your Tasks</h2>
       <hr />
       {/* ------------------------------------------------------------------
    Dashboard Stats

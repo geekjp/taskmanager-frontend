@@ -595,3 +595,69 @@ button:disabled {
   padding: 10px;
 }
 }
+
+/* Welcome Text */
+
+/* Welcome Text */
+
+.welcome-text {
+  margin-bottom: 20px;
+  color: #4d5b6e;
+  font-weight: 600;
+  font-size: 30px;
+}
+/* ------------------------------------------------------------------
+   Dashboard Header
+------------------------------------------------------------------ */
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  gap: 20px;
+}
+
+/* Welcome Heading */
+
+.welcome-text {
+  font-size: 30px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 6px;
+}
+
+/* Subtitle */
+
+.dashboard-subtitle {
+  color: #64748B;
+  font-size: 15px;
+}
+
+/* Tasks Title */
+
+.tasks-title {
+  margin-top: 25px;
+  margin-bottom: 20px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* Search */
+
+.search-input {
+  width: 320px;
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+/* Dark Mode Support */
+
+.dark .welcome-text,
+.dark .tasks-title {
+  color: #F8FAFC;
+}
+
+.dark .dashboard-subtitle {
+  color: #CBD5E1;
+}

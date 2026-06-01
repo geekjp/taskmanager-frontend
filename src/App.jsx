@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Import page components
 // These are the actual screens we want to render
+import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Tasks from "./pages/Tasks";
 import Navbar from "./components/Navbar";
@@ -96,7 +97,7 @@ const App = () => {
         <Routes>
           {/*
         |--------------------------------------------------------------------------
-        | Login Route
+        | Login Route and Registeration routes
         |--------------------------------------------------------------------------
         | When user visits:
         | http://localhost:5173/login
@@ -104,6 +105,7 @@ const App = () => {
         | Render the Login component
         */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/*
         |--------------------------------------------------------------------------

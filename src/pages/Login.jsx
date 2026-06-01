@@ -1,12 +1,10 @@
 // Import React hook that lets us store and update values
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // Import our axios API helper (used to talk to backend)
 import api from "../services/api";
-
 // Login component = a React screen
 const Login = () => {
-
   /*
   -----------------------------------------
   STATE VARIABLES
@@ -15,7 +13,7 @@ const Login = () => {
   */
 
   // Stores the email typed by user
-  const [email, setEmail] = useState("");//email = stored value, setEmail = function to change it, "" = starting value
+  const [email, setEmail] = useState(""); //email = stored value, setEmail = function to change it, "" = starting value
 
   // Hook used for programmatic navigation
   const navigate = useNavigate();
@@ -28,7 +26,6 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
 
-
   /*
   -----------------------------------------
   LOGIN FUNCTION
@@ -36,45 +33,42 @@ const Login = () => {
   -----------------------------------------
   */
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // ❌ Step 1: Validate BEFORE loader
-  if (!email || !password) {
-    setMessage("All fields are required ❌");
-    return;
-  }
+    // ❌ Step 1: Validate BEFORE loader
+    if (!email || !password) {
+      setMessage("All fields are required ❌");
+      return;
+    }
 
-  // Optional: Email format check
-  if (!email.includes("@")) {
-    setMessage("Please provide a valid email ❌");
-    return;
-  }
+    // Optional: Email format check
+    if (!email.includes("@")) {
+      setMessage("Please provide a valid email ❌");
+      return;
+    }
 
-  try {
-    setLoading(true); // ✅ start loader ONLY if valid
+    try {
+      setLoading(true); // ✅ start loader ONLY if valid
 
-    const res = await api.post("/auth/login", {
-      email,
-      password,
-    });
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
-    localStorage.setItem("token", res.data.data.token);
+      localStorage.setItem("token", res.data.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.data.user));
+      
 
-    setMessage("Login successful ✅");
+      setMessage("Login successful ✅");
 
       // Redirect to tasks page
       navigate("/tasks");
-
-  } catch (error) {
-    setMessage(
-      error.response?.data?.message || "Login failed ❌"
-    );
-  } finally {
-    setLoading(false); // always stop loader
-  }
-};
-
-
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Login failed ❌");
+    } finally {
+      setLoading(false); // always stop loader
+    }
+  };
 
   /*
   -----------------------------------------
@@ -82,45 +76,49 @@ const Login = () => {
   -----------------------------------------
   */
   return (
-  <div className="page">
+    <div className="page">
+      <div className="login-card">
+        <h2>Welcome</h2>
 
-    <div className="login-card">
+        <form onSubmit={handleLogin}>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setMessage("");
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setMessage("");
+            }}
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? "Loading..." : "Login"}
+          </button>
+          {/*
+          |--------------------------------------------------------------------------
+          | Register Redirect
+          |--------------------------------------------------------------------------
+          */}
+          <p style={{ marginTop: "15px" }}>
+            Don't have an account? <Link to="/register">Register</Link>
+          </p>
+        </form>
 
-      <h2>Welcome Back</h2>
-
-      <form onSubmit={handleLogin}>
-
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => {setEmail(e.target.value);setMessage("")}}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-         onChange={(e) => {setPassword(e.target.value);setMessage("")}}
-        />
-
-        <button type="submit" disabled={loading} >
-          {loading ? "Loading..." : "Login"}
-        </button>
-
-      </form>
-
-      <p className="message">{message}</p>
-
+        <p className="message">{message}</p>
+      </div>
     </div>
-
-  </div>
-);
-
+  );
 };
 
 // Export component so React can use it
 export default Login;
-
 
 /* IMPortant: If interviewer asks:
 
