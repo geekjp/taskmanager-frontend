@@ -51,15 +51,17 @@ const Register = () => {
 
       navigate("/tasks");
     } catch (error) {
-      console.log(error);
+      console.log(error.response?.data);
+
+      showToast(
+        error.response?.data?.message || "Registration failed",
+        "error",
+      );
     }
   };
   return (
     <div className="page">
-      <form
-  className="login-card"
-  onSubmit={registerUser}>
-
+      <form className="login-card" onSubmit={registerUser}>
         <h2>Create Account</h2>
 
         {/* Name Input */}
@@ -91,7 +93,7 @@ const Register = () => {
 
         {/* Submit Button */}
 
-        <button type = "submit">Register</button>
+        <button type="submit">Register</button>
       </form>
     </div>
   );
