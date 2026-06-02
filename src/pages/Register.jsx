@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useToast } from "../context/ToastContext";
 const Register = () => {
   /*
   |--------------------------------------------------------------------------
@@ -12,7 +13,8 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
+ //showToast function rendering
+  const { showToast } = useToast();
   /*
 |--------------------------------------------------------------------------
 | Register User
@@ -20,45 +22,56 @@ const Register = () => {
 */
 
   const registerUser = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      /*
-    |--------------------------------------------------------------------------
+  try {
+    /*
+    |------------------------------------------------------------------
     | Backend Request
-    |--------------------------------------------------------------------------
+    |------------------------------------------------------------------
     */
+    const res = await api.post("/auth/register", {
+      name,
+      email,
+      password,
+    });
 
-      const res = await api.post("/auth/register", {
-        name,
-        email,
-        password,
-      });
-
-      /*
-    |--------------------------------------------------------------------------
-    | Save Token
-    |--------------------------------------------------------------------------
+    /*
+    |------------------------------------------------------------------
+    | Save Auth Data
+    |------------------------------------------------------------------
     */
+    localStorage.setItem("token", res.data.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.data.user));
 
-      localStorage.setItem("token", res.data.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.data.user));
-      /*
-    |--------------------------------------------------------------------------
+    /*
+    |------------------------------------------------------------------
+    | Success Toast
+    |------------------------------------------------------------------
+    */
+    showToast(
+      res.data.message || "User registered successfully",
+      "success"
+    );
+
+    /*
+    |------------------------------------------------------------------
     | Redirect User
-    |--------------------------------------------------------------------------
+    |------------------------------------------------------------------
     */
+    navigate("/tasks");
 
-      navigate("/tasks");
-    } catch (error) {
-      console.log(error.response?.data);
+  } catch (error) {
+    console.error("Register Error:", error.response?.data);
 
-      showToast(
-        error.response?.data?.message || "Registration failed",
-        "error",
-      );
-    }
-  };
+    showToast(
+      error.response?.data?.message ||
+      "Registration failed",
+      "error"
+    );
+  }
+};
+
   return (
     <div className="page">
       <form className="login-card" onSubmit={registerUser}>
